@@ -1,0 +1,23 @@
+{
+  "name": "bart/homes",
+  "description": "Retrieves info from the homes.co.jp website and inserts it into a database",
+  "type": "project",
+  "license": "BSD",
+  "authors": [
+    {
+      "name": "Bart Riepe",
+      "email": "aeolun@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Bart\\Homes\\": "src/"
+    }
+  },
+  "minimum-stability": "stable",
+  "require": {
+    "catfan/medoo": "^1.5",
+    "guzzlehttp/guzzle": "^6.3",
+    "symfony/console": "^4.1"
+  }
+}
