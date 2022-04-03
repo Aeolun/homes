@@ -165,13 +165,13 @@ class RetrieveCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $dotenv = Dotenv::createImmutable(__DIR__);
+        $dotenv = Dotenv::createImmutable(__DIR__.'/../..');
         $dotenv->safeLoad();
 
         $necessaryVars = ['DATABASE_TYPE', 'DATABASE_NAME', 'DATABASE_HOST', 'DATABASE_USERNAME', 'DATABASE_PASSWORD', 'DATABASE_CHARSET'];
-        foreach($necessaryVars as $var) {
+        foreach($necessaryVars as $key => $var) {
             if (!isset($_ENV[$var])) {
-                throw new \Exception("Need the environment variable ${$var} to be set.");
+                throw new \Exception("Need the environment variable $var to be set: ");
             }
         }
 
@@ -242,8 +242,9 @@ class RetrieveCommand extends Command
                 $data = $this->parseItem($item);
                 if (!isset($this->existingIds[$data['suumo_id']])) {
                     $data['province'] = $provinceName;
-		    $data['region'] = $areaName;
-		    $data['property_type'] = $type;
+                    $data['region'] = $areaName;
+                    $data['property_type'] = $type;
+                    $data['insert_date'] = date('Y-m-d');
                     $allItems[] = $data;
                 }
             } catch (\Exception $e) {
@@ -301,8 +302,8 @@ class RetrieveCommand extends Command
             if ($coverMatch) {
                 $volume = $matches[1];
             }
-            if (strpos($field['coverage'], '・' && !$landCoverage && !$volume) !== false) {
-                list($landCoverage, $volume) = explode('・', $field['coverage']);
+            if (strpos($field['coverage'], '・') !== false && !$landCoverage && !$volume) {
+                list($landCoverage, $volume) = @explode('・', $field['coverage']);
             }
         }
 
