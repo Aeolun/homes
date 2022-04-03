@@ -16,8 +16,9 @@
   },
   "minimum-stability": "stable",
   "require": {
-    "catfan/medoo": "^1.5",
+    "catfan/medoo": "^2",
     "guzzlehttp/guzzle": "^6.3",
-    "symfony/console": "^4.1"
+    "symfony/console": "^4.1",
+    "vlucas/phpdotenv": "^5.4"
   }
 }

@@ -18,6 +18,7 @@ namespace Bart\Homes\Command;
 //
 
 
+use Dotenv\Dotenv;
 use GuzzleHttp\Client;
 use Medoo\Medoo;
 use Symfony\Component\Console\Command\Command;
@@ -132,10 +133,8 @@ class RetrieveCommand extends Command
 
 
     private $base = 'https://suumo.jp/jj/bukken/ichiran/JJ012FC001/?ar={area}&bs={type}&ta={province}&pn={page}&ekTjCd=&ekTjNm=&kb=1&kj=9&km=1&kt=9999999&ta=13&tb=0&tj=0&tt=9999999&po=0&pj=1&pc=100';
-    /** @var Medoo */
-    private $database = null;
-    /** @var Client */
-    private $client = null;
+    private Medoo|null $database = null;
+    private Client|null $client = null;
     private $perPage = 100;
 
     private $existingIds = [];
@@ -166,13 +165,23 @@ class RetrieveCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $dotenv = Dotenv::createImmutable(__DIR__);
+        $dotenv->safeLoad();
+
+        $necessaryVars = ['DATABASE_TYPE', 'DATABASE_NAME', 'DATABASE_HOST', 'DATABASE_USERNAME', 'DATABASE_PASSWORD', 'DATABASE_CHARSET'];
+        foreach($necessaryVars as $var) {
+            if (!isset($_ENV[$var])) {
+                throw new \Exception("Need the environment variable ${$var} to be set.");
+            }
+        }
+
         $this->database = new Medoo([
-            'database_type' => 'mysql',
-            'database_name' => 'homes',
-            'server' => 'localhost',
-            'username' => 'root',
-            'password' => 'kiwi',
-            'charset' => 'utf8',
+            'database_type' => $_ENV["DATABASE_TYPE"],
+            'database' => $_ENV["DATABASE_NAME"],
+            'host' => $_ENV["DATABASE_HOST"],
+            'username' => $_ENV["DATABASE_USERNAME"],
+            'password' => $_ENV["DATABASE_PASSWORD"],
+            'charset' => $_ENV["DATABASE_CHARSET"],
         ]);
         $this->client = new Client();
 
@@ -190,7 +199,7 @@ class RetrieveCommand extends Command
             if ($onlyRegion && $key !== $onlyRegion) continue;
             foreach ($area['provinces'] as $provinceId => $provinceName) {
                 if ($onlyProvince && $provinceId != $onlyProvince) continue;
-                $page = $this->getPage($this->base, 1, $key, $provinceId, $type);
+                $page = $this->getPage('list', $this->base, 1, $key, $provinceId, $type);
                 $totalItems = $this->getTotalItems($page);
                 try {
                     $this->parseItems($page, $output, $area['name'], $provinceName, $type);
@@ -204,7 +213,7 @@ class RetrieveCommand extends Command
                 if ($totalItems) {
                     for ($i = 2; $i <= $pagesToLoad; $i++) {
                         $start = microtime(true);
-                        $page = $this->getPage($this->base, $i, $key, $provinceId, $type);
+                        $page = $this->getPage('list', $this->base, $i, $key, $provinceId, $type);
                         try {
                             $this->parseItems($page, $output, $area['name'], $provinceName, $type);
                         } catch (\Exception $e) {
@@ -393,7 +402,7 @@ class RetrieveCommand extends Command
         return intval($price);
     }
 
-    private function getPage($url, $pageNr, $area, $province, $type)
+    private function getPage($kind, $url, $pageNr, $area, $province, $type)
     {
         $url = str_replace('{area}', $area, $url);
         $url = str_replace('{type}', $type, $url);
@@ -423,6 +432,7 @@ class RetrieveCommand extends Command
             $body = $page->getBody()->getContents();
             $this->database->insert('page', [
                 'url' => $url,
+                'kind' => $kind,
                 'content' => $body
             ]);
             return $body;
