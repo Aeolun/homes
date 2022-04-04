@@ -5,7 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d01bb918-32be-43c6-bfa9-3cb62d75129f" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/.dockerignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Command/RetrieveCommand.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Command/RetrieveCommand.php" afterDir="false" />
@@ -146,7 +145,7 @@
       <workItem from="1535985323403" duration="2091000" />
       <workItem from="1541807627355" duration="10734000" />
       <workItem from="1541913555115" duration="11000" />
-      <workItem from="1648963887810" duration="9918000" />
+      <workItem from="1648963887810" duration="10035000" />
     </task>
     <servers />
   </component>

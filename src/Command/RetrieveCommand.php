@@ -255,7 +255,6 @@ class RetrieveCommand extends Command
                     $existingItem = $this->database->get('property', ['price'], ["suumo_id" => $data['suumo_id'], 'ORDER'=> ['insert_date' => 'DESC']]);
                     if ($data['price'] && is_numeric($data['price']) && intval($data['price']) != intval($existingItem['price'])) {
                         print ("updating item price from ".$existingItem['price']." to ".$data['price']);
-                        var_dump($data);
                         $allItems[] = $data;
                     }
                 }
