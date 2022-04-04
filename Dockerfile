@@ -11,4 +11,4 @@ WORKDIR /app/
 
 RUN composer install
 
-CMD ["/usr/sbin/cron", "-f"]
+CMD ["/app/start.sh"]
