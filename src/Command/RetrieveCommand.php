@@ -160,6 +160,7 @@ class RetrieveCommand extends Command
             ->addOption('region', 'r', InputOption::VALUE_REQUIRED, 'The number for the region to retrieve')
             ->addOption('province', 'p', InputOption::VALUE_REQUIRED, 'The number for the province to retrieve')
             ->addOption('type', 't', InputOption::VALUE_REQUIRED, 'The kind of items to retrieve')
+            ->addOption('refresh', null, InputOption::VALUE_OPTIONAL, 'Clear the page cache before updating')
             ->setDescription('Retrieves data from homes and stores to the database.');
     }
 
@@ -184,6 +185,10 @@ class RetrieveCommand extends Command
             'charset' => $_ENV["DATABASE_CHARSET"],
         ]);
         $this->client = new Client();
+
+        if ($input->getOption('refresh')) {
+            $this->database->delete('page');
+        }
 
         $everything = $this->database->select('property', ['suumo_id']);
         foreach ($everything as $row) {
@@ -240,12 +245,19 @@ class RetrieveCommand extends Command
             try {
                 $id = $this->getElement($item, './/input[@name="bsnc"]/@value');
                 $data = $this->parseItem($item);
+                $data['insert_date'] = date('Y-m-d');
+                $data['province'] = $provinceName;
+                $data['region'] = $areaName;
+                $data['property_type'] = $type;
                 if (!isset($this->existingIds[$data['suumo_id']])) {
-                    $data['province'] = $provinceName;
-                    $data['region'] = $areaName;
-                    $data['property_type'] = $type;
-                    $data['insert_date'] = date('Y-m-d');
                     $allItems[] = $data;
+                } else {
+                    $existingItem = $this->database->get('property', ['price'], ["suumo_id" => $data['suumo_id'], 'ORDER'=> ['insert_date' => 'DESC']]);
+                    if ($data['price'] && is_numeric($data['price']) && intval($data['price']) != intval($existingItem['price'])) {
+                        print ("updating item price from ".$existingItem['price']." to ".$data['price']);
+                        var_dump($data);
+                        $allItems[] = $data;
+                    }
                 }
             } catch (\Exception $e) {
                 $output->writeln("Exception parsing item " . $id . ": " . $e->getMessage());
@@ -267,11 +279,6 @@ class RetrieveCommand extends Command
     private function parseItem($xml)
     {
         $id = $this->getElement($xml, './/input[@name="bsnc"]/@value');
-        if (isset($this->existingIds[$id])) {
-            return [
-                'suumo_id' => $id
-            ];
-        }
 
         $field = [];
         foreach ($this->fields as $key => $value) {
@@ -296,11 +303,11 @@ class RetrieveCommand extends Command
         if (isset($field['coverage']) && $field['coverage']) {
             $coverMatch = preg_match('/建ペい率：([0-9]+)/u', $field['coverage'], $matches);
             if ($coverMatch) {
-                $landCoverage = $matches[1];
+                $landCoverage = preg_replace('/[^0-9]+/', '', $matches[1]);
             }
             $coverMatch = preg_match('/容積率：([0-9]+)/', $field['coverage'], $matches);
             if ($coverMatch) {
-                $volume = $matches[1];
+                $volume = preg_replace('/[^0-9]+/', '', $matches[1]);
             }
             if (strpos($field['coverage'], '・') !== false && !$landCoverage && !$volume) {
                 list($landCoverage, $volume) = @explode('・', $field['coverage']);
@@ -328,8 +335,8 @@ class RetrieveCommand extends Command
             'building_area' => isset($field['building_area']) ? $this->parseArea($field['building_area']) : null,
             'address' => $field['address'],
             'type' => isset($field['type']) ? $field['type'] : null,
-            'coverage' => $landCoverage,
-            'volume' => $volume,
+            'coverage' => intval($landCoverage),
+            'volume' => intval($volume),
             'url' => 'https://suumo.jp' . $url,
 //            'state' => $parsedAddress['state'],
 //            'city' => $parsedAddress['city'],
