@@ -160,7 +160,7 @@ class RetrieveCommand extends Command
             ->addOption('region', 'r', InputOption::VALUE_REQUIRED, 'The number for the region to retrieve')
             ->addOption('province', 'p', InputOption::VALUE_REQUIRED, 'The number for the province to retrieve')
             ->addOption('type', 't', InputOption::VALUE_REQUIRED, 'The kind of items to retrieve')
-            ->addOption('refresh', null, InputOption::VALUE_OPTIONAL, 'Clear the page cache before updating')
+            ->addOption('refresh', null, InputOption::VALUE_NONE, 'Clear the page cache before updating')
             ->setDescription('Retrieves data from homes and stores to the database.');
     }
 
@@ -184,10 +184,12 @@ class RetrieveCommand extends Command
             'password' => $_ENV["DATABASE_PASSWORD"],
             'charset' => $_ENV["DATABASE_CHARSET"],
         ]);
-        $this->client = new Client();
+        $this->client = new Client(['defaults' => [
+            'verify' => false
+        ]]);
 
         if ($input->getOption('refresh')) {
-            $this->database->delete('page');
+            $this->database->delete('page', "1=1");
         }
 
         $everything = $this->database->select('property', ['suumo_id']);
@@ -254,7 +256,7 @@ class RetrieveCommand extends Command
                 } else {
                     $existingItem = $this->database->get('property', ['price'], ["suumo_id" => $data['suumo_id'], 'ORDER'=> ['insert_date' => 'DESC']]);
                     if ($data['price'] && is_numeric($data['price']) && intval($data['price']) != intval($existingItem['price'])) {
-                        print ("updating item price from ".$existingItem['price']." to ".$data['price']);
+                        $output->writeln("Inserting new item with updated price. Original ".$existingItem['price']." to new ".$data['price']);
                         $allItems[] = $data;
                     }
                 }
@@ -353,7 +355,7 @@ class RetrieveCommand extends Command
 
         preg_match('/([^「]+)「([^」]+)」/u', $station, $matches);
         $line = $matches[1];
-        $stationName = $matches[2];
+        $stationName = isset($matches[2]) ? $matches[2] : null;
 
         $byFoot = 0;
         $match = preg_match('/徒歩([0-9]+)分/u', $station, $matches);
@@ -423,7 +425,7 @@ class RetrieveCommand extends Command
         if ($existing) {
             return $existing['content'];
         } else {
-            $page = $this->client->get($url, [
+            $page = @$this->client->get($url, [
                 'headers' => [
                     'Connection' => 'keep-alive',
                     'Cache-Control' => 'max-age=0',
