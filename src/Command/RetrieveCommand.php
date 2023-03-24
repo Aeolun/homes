@@ -8,16 +8,6 @@
 
 namespace Bart\Homes\Command;
 
-//https://suumo.jp/jj/bukken/ichiran/JJ010FJ001/?ar=030&bs=030&ta=10&jspIdFlg=patternShikugun&kb=1&kt=9999999&km=1&tb=0&tt=9999999&ekTjCd=&ekTjNm=&tj=0&kj=9
-//https://suumo.jp/jj/bukken/ichiran/JJ010FJ001/?ar=030&bs=030&ta=08&jspIdFlg=patternShikugun&kb=1&kt=9999999&km=1&tb=0&tt=9999999&ekTjCd=&ekTjNm=&tj=0&kj=9
-//https://suumo.jp/jj/bukken/ichiran/JJ010FJ001/?ar=030&bs=030&ta=12&jspIdFlg=patternShikugun&kb=1&kt=9999999&km=1&tb=0&tt=9999999&ekTjCd=&ekTjNm=&tj=0&kj=9
-//https://suumo.jp/jj/bukken/ichiran/JJ010FJ001/?ar=020&bs=030&ta=06&jspIdFlg=patternShikugun&kb=1&kt=9999999&km=1&tb=0&tt=9999999&ekTjCd=&ekTjNm=&tj=0&kj=9
-//https://suumo.jp/jj/bukken/ichiran/JJ010FJ001/?ar=020&bs=030&ta=03&jspIdFlg=patternShikugun&kb=1&kt=9999999&km=1&tb=0&tt=9999999&ekTjCd=&ekTjNm=&tj=0&kj=9
-//https://suumo.jp/jj/bukken/ichiran/JJ010FJ001/?ar=070&bs=030&ta=36&jspIdFlg=patternShikugun&kb=1&kt=9999999&km=1&tb=0&tt=9999999&ekTjCd=&ekTjNm=&tj=0&kj=9
-//https://suumo.jp/jj/bukken/ichiran/JJ010FJ001/?ar=070&bs=030&ta=38&jspIdFlg=patternShikugun&kb=1&kt=9999999&km=1&tb=0&tt=9999999&ekTjCd=&ekTjNm=&tj=0&kj=9
-//
-
-
 use Dotenv\Dotenv;
 use GuzzleHttp\Client;
 use Medoo\Medoo;
